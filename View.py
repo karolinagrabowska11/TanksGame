@@ -1,5 +1,5 @@
 import pygame
-from cons import BLACK, BLUE, LIGHT_GREEN, PICTURE_EDGE, map_level_1
+from cons import BLACK, BLUE, LIGHT_GREEN, WHITE, RED, PICTURE_EDGE, map_level_1
 from images import wall_image, grass_image, brick_image, flash_img_dict, smoke_img_dict
 
 WALL_POSITIONS = []
@@ -119,7 +119,7 @@ class View:
             winning_text = my_font.render('!!! YOU WON !!!', True, BLUE)
             screen.blit(winning_text, (2, 200))
 
-    def score(self, screen, points, dead_opponent_one, dead_opponent_two):
+    def score(self, screen, points, dead_opponent_one, dead_opponent_two, lives_number):
         """
         Display score on a screen.
 
@@ -133,12 +133,52 @@ class View:
             Number of dead OpponentOne.
         dead_opponent_two : int
             Number of dead OpponentTwo.
+        lives_number : int
+            Number of lives Player has left.
         """
 
         my_font = pygame.font.SysFont('Comic Sans MS', 14)
         score_text = my_font.render('Score: %s' % points, True, LIGHT_GREEN)
         dead_opponent_one_text = my_font.render('Blue tanks: %s' % dead_opponent_one, True, LIGHT_GREEN)
         dead_opponent_two_text = my_font.render('Green tanks: %s' % dead_opponent_two, True, LIGHT_GREEN)
+        lives_number_text = my_font.render('Lives: %s' % lives_number, True, WHITE)
         screen.blit(score_text, (320, 365))
         screen.blit(dead_opponent_one_text, (320, 380))
         screen.blit(dead_opponent_two_text, (320, 397))
+        screen.blit(lives_number_text, (320, 413))
+
+    def lost_life(self, screen, life_number):
+        """
+        Display text when the players wins.
+
+        Parameters
+        ----------
+        screen: pygame.Surface
+            Game object is drawn on the screen.
+        life_number: int
+            Number of lives that Player has lost.
+        """
+
+        my_font = pygame.font.SysFont('orange juice', 80)
+        txt = ' life.'
+        if life_number > 1:
+            txt = ' lives.'
+        lost_text = my_font.render('You lost %s' % life_number + txt, True, WHITE)
+        screen.blit(lost_text, (2, 200))
+
+    def loss(self, screen):
+        """
+        Display text when the players loses.
+
+        Parameters
+        ----------
+        screen: pygame.Surface
+            Game object is drawn on the screen.
+        """
+
+        my_font = pygame.font.SysFont('orange juice', 80)
+        lost_text = my_font.render('You lost...', True, RED)
+        game_over_text = my_font.render('GAME OVER', True, RED)
+        screen.blit(lost_text, (100, 180))
+        screen.blit(game_over_text, (40, 250))
+

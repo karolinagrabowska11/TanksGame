@@ -1,4 +1,5 @@
 from images import shot_up_image, shot_down_image, shot_right_image, shot_left_image
+from sound import brick_destroy_sound, impact
 from cons import DIRECTIONS
 from View import WALL_POSITIONS, BRICK_POSITIONS
 
@@ -138,6 +139,7 @@ class Shot:
                     BRICK_POSITIONS.remove(shot_object.position)
                     view.flash_effect(screen, shot_object.position, self.direction_key)
                     brick_collision = 0
+                    brick_destroy_sound.play()
                 break
             if game_object_one_positions_list:
                 if shot_object.position == game_object_one_positions_list[-1]:
@@ -145,11 +147,13 @@ class Shot:
                     dead_opponent_one += 1
                     view.smoke_effect(screen, shot_object.position, self.direction_key)
                     opponents_one_list.pop()
+                    impact.play()
                     return dead_opponent_one, dead_opponent_two, brick_collision, opponent_two_collision
             if game_object_two_positions_list:
                 if shot_object.position == game_object_two_positions_list[-1]:
                     shots_group.clear()
                     opponent_two_collision += 1
+                    impact.play()
                     if opponent_two_collision == 2:
                         dead_opponent_two += 1
                         view.smoke_effect(screen, shot_object.position, self.direction_key)
@@ -159,8 +163,8 @@ class Shot:
             shot_object.view_game_object(screen)
         return dead_opponent_one, dead_opponent_two, brick_collision, opponent_two_collision
 
-    def shot_opponent_one_collision(self, screen, view, shots_group_opponent_one, player, brick_collision,
-                                    player_collision, lost_lives):
+    def shot_opponent_one_collision(self, screen, view, shots_group_opponent_one, player, player_collision,
+                                    player_lives, screen_delay):
         """
         Check opponent shots collisions with brick, wall and game objects: player.
 
@@ -174,44 +178,44 @@ class Shot:
             List of Shot object.
         player : Player
             Player object.
-        brick_collision : int
-            Number of collisions with brick.
         player_collision : int
             Number of collisions with object game Player.
-        lost_lives : int
+        player_lives : int
             Number of Player's lost lives.
+        screen_delay : bool
+            Responsible for screen delay after shot collision with Player.
 
         Returns
         -------
-        brick_collision : int
-            Number of collisions with brick.
         player_collision : int
             Number of collisions with object game Player.
-        lost_lives : int
+        player_lives : int
             Number of Player's lost lives.
+        screen_delay : bool
+            Responsible for screen delay after shot collision with Player.
         """
 
         for s in range(len(shots_group_opponent_one)):
             shot_object = shots_group_opponent_one[s]
             shot_object.move()
             if shot_object.position in WALL_POSITIONS:
-                shots_group_opponent_one.pop(0)
+                shots_group_opponent_one.pop()
                 break
             if shot_object.position in BRICK_POSITIONS:
-                shots_group_opponent_one.pop(0)
-                if brick_collision == 3:
-                    BRICK_POSITIONS.remove(shot_object.position)
-                    view.flash_effect(screen, shot_object.position, self.direction_key)
-                    brick_collision = 0
+                shots_group_opponent_one.pop()
                 break
             if shot_object.position == player.position:
-                shots_group_opponent_one.clear()
+                shots_group_opponent_one.pop()
                 player_collision += 1
-                if player == 2:
-                    lost_lives += 1
+                impact.play()
+                if player_collision == 2:
+                    player_lives -= 1
+                    player.position = (224, 416)
                     view.smoke_effect(screen, shot_object.position, self.direction_key)
                     player_collision = 0
-                    print('you are dead')
-                return brick_collision, player_collision, lost_lives
+                    screen_delay = True
+                    if player_lives == 0:
+                        screen_delay = False
+                return player_collision, player_lives, screen_delay
             shot_object.view_game_object(screen)
-        return brick_collision, player_collision, lost_lives
+        return player_collision, player_lives, screen_delay
